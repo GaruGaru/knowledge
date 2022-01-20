@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gorm.io/gorm"
+	"math"
 )
 
 type DBStore struct {
@@ -23,7 +24,7 @@ func (d *DBStore) InsertDocument(ctx context.Context, req InsertDocumentRequest)
 	return result.Error
 }
 
-func (d *DBStore) Search(ctx context.Context, request SearchRequest) ([]Document, error) {
+func (d *DBStore) ListDocuments(ctx context.Context, request ListDocumentsRequest) (ListDocumentsResponse, error) {
 	query := d.db.WithContext(ctx)
 
 	query = query.Preload("Tags").Preload("Authors")
@@ -38,10 +39,26 @@ func (d *DBStore) Search(ctx context.Context, request SearchRequest) ([]Document
 		query = query.Where("document_tags.tag IN ?", request.Tags)
 	}
 
+	var totalElements int64
+	cntQuery := query.Model(&Document{}).Count(&totalElements)
+	if err := cntQuery.Error; err != nil {
+		return ListDocumentsResponse{}, err
+	}
+
 	query = query.Order("title")
-	query = query.Offset((request.Pagination.Page - 1) * request.Pagination.PageSize).Limit(request.Pagination.PageSize)
+	query = query.Offset(request.Pagination.Offset()).Limit(request.Pagination.PageSize)
 
 	var documents []Document
 	query = query.Find(&documents)
-	return documents, query.Error
+
+	var response ListDocumentsResponse
+
+	response.Items = documents
+	response.Pagination = PaginationResponse{
+		TotalElements: totalElements,
+		Page:          request.Pagination.Page,
+		Pages:         int(math.Ceil(float64(totalElements) / float64(request.Pagination.PageSize))),
+	}
+
+	return response, query.Error
 }

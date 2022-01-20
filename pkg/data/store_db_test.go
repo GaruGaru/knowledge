@@ -56,7 +56,7 @@ func TestDBStore_InsertDocument(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestDBStore_Search(t *testing.T) {
+func TestDBStore_ListDocuments(t *testing.T) {
 	tmpDb := path.Join(t.TempDir(), t.Name())
 	db, err := gorm.Open(sqlite.Open(tmpDb), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
@@ -67,7 +67,8 @@ func TestDBStore_Search(t *testing.T) {
 	err = store.Init()
 	require.NoError(t, err)
 
-	for i := 0; i < 10; i++ {
+	const documentsCount = 10
+	for i := 0; i < documentsCount; i++ {
 		err = store.InsertDocument(context.TODO(), InsertDocumentRequest{
 			Document: Document{
 				Title: fmt.Sprintf("Test Title %d", i),
@@ -84,7 +85,7 @@ func TestDBStore_Search(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	documents, err := store.Search(context.TODO(), SearchRequest{
+	documents, err := store.ListDocuments(context.TODO(), ListDocumentsRequest{
 		Title: "Test",
 		Tags:  []string{"book"},
 		Pagination: PaginationRequest{
@@ -94,17 +95,23 @@ func TestDBStore_Search(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	require.Len(t, documents, 2)
+	require.Len(t, documents.Items, 2)
 
-	require.Equal(t, "Test Title 0", documents[0].Title)
-	require.Equal(t, "Test Title 1", documents[1].Title)
+	require.Equal(t, "Test Title 0", documents.Items[0].Title)
+	require.Equal(t, "Test Title 1", documents.Items[1].Title)
 
-	for _, doc := range documents {
+	require.Equal(t, PaginationResponse{
+		TotalElements: documentsCount,
+		Page:          1,
+		Pages:         documentsCount / 2,
+	}, documents.Pagination)
+
+	for _, doc := range documents.Items {
 		require.NotEmpty(t, doc.Tags)
 		require.NotEmpty(t, doc.Authors)
 	}
 
-	documents, err = store.Search(context.TODO(), SearchRequest{
+	documents, err = store.ListDocuments(context.TODO(), ListDocumentsRequest{
 		Title: "Book",
 		Tags:  []string{"book"},
 		Pagination: PaginationRequest{
@@ -114,9 +121,9 @@ func TestDBStore_Search(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	require.Empty(t, documents, "title should not match")
+	require.Empty(t, documents.Items, "title should not match")
 
-	documents, err = store.Search(context.TODO(), SearchRequest{
+	documents, err = store.ListDocuments(context.TODO(), ListDocumentsRequest{
 		Tags: []string{"tag_0"},
 		Pagination: PaginationRequest{
 			Page:     1,
@@ -125,5 +132,5 @@ func TestDBStore_Search(t *testing.T) {
 	})
 
 	require.NoError(t, err)
-	require.Len(t, documents, 1, "tag only search must yield only 1 result")
+	require.Len(t, documents.Items, 1, "tag only search must yield only 1 result")
 }

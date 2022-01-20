@@ -5,20 +5,36 @@ import "context"
 type Store interface {
 	Init() error
 	InsertDocument(context.Context, InsertDocumentRequest) error
-	Search(context.Context, SearchRequest) ([]Document, error)
+	ListDocuments(context.Context, ListDocumentsRequest) (ListDocumentsResponse, error)
 }
 
 type InsertDocumentRequest struct {
-	Document Document
+	Document   Document
+	Pagination PaginationResponse
 }
 
-type SearchRequest struct {
+type ListDocumentsRequest struct {
 	Title      string
 	Tags       []string
 	Pagination PaginationRequest
 }
 
+type ListDocumentsResponse struct {
+	Items      []Document
+	Pagination PaginationResponse
+}
+
 type PaginationRequest struct {
 	Page     int
 	PageSize int
+}
+
+func (p PaginationRequest) Offset() int {
+	return (p.Page - 1) * p.PageSize
+}
+
+type PaginationResponse struct {
+	TotalElements int64
+	Page          int
+	Pages         int
 }
