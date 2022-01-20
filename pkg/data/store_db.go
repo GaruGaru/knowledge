@@ -62,3 +62,9 @@ func (d *DBStore) ListDocuments(ctx context.Context, request ListDocumentsReques
 
 	return response, query.Error
 }
+
+func (d *DBStore) GetDocument(ctx context.Context, request GetDocumentRequest) (Document, error) {
+	var document Document
+	query := d.db.WithContext(ctx).Preload("Tags").Preload("Authors").First(&document, request.DocumentID)
+	return document, query.Error
+}

@@ -8,6 +8,7 @@ import (
 type Document struct {
 	gorm.Model
 
+	ID             int
 	Title          string
 	Uri            string
 	DocumentKindID int

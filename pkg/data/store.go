@@ -5,6 +5,7 @@ import "context"
 type Store interface {
 	Init() error
 	InsertDocument(context.Context, InsertDocumentRequest) error
+	GetDocument(context.Context, GetDocumentRequest) (Document, error)
 	ListDocuments(context.Context, ListDocumentsRequest) (ListDocumentsResponse, error)
 }
 
@@ -31,6 +32,10 @@ type PaginationRequest struct {
 
 func (p PaginationRequest) Offset() int {
 	return (p.Page - 1) * p.PageSize
+}
+
+type GetDocumentRequest struct {
+	DocumentID int
 }
 
 type PaginationResponse struct {
