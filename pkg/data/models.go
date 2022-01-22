@@ -2,20 +2,19 @@ package data
 
 import (
 	"gorm.io/gorm"
-	"time"
 )
 
 type Document struct {
 	gorm.Model
 
 	ID             int
-	Title          string
-	Uri            string
+	Title          *string `gorm:"not null"`
+	Uri            *string `gorm:"not null"`
 	DocumentKindID int
 	DocumentKind   DocumentKind
 	Authors        []DocumentAuthor `gorm:"many2many:document_document_authors;"`
 	Tags           []DocumentTag    `gorm:"many2many:document_document_tags;"`
-	PublishDate    time.Time
+	CreateTime     int              `gorm:"autoCreateTime"`
 }
 
 type DocumentKind struct {

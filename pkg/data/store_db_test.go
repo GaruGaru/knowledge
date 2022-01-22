@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm"
 	"path"
 	"testing"
-	"time"
 )
 
 func TestDBStore_Init(t *testing.T) {
@@ -34,26 +33,75 @@ func TestDBStore_InsertDocument(t *testing.T) {
 	err = store.Init()
 	require.NoError(t, err)
 
-	err = store.InsertDocument(context.TODO(), InsertDocumentRequest{
-		Document: Document{
-			Title: "Test Title",
-			Uri:   "file://test.txt",
-			DocumentKind: DocumentKind{
-				Name: "file",
+	requests := []InsertDocumentRequest{
+		{
+			Document: Document{
+				Title: strptr("Test Title"),
+				Uri:   strptr("file://test.txt"),
+				DocumentKind: DocumentKind{
+					Name: "file",
+				},
+				Authors: []DocumentAuthor{
+					{Name: "Me", Surname: "Me"},
+					{Name: "Myself", Surname: "Myself"},
+				},
+				Tags: []DocumentTag{
+					{Tag: "test"},
+					{Tag: "book"},
+				},
 			},
-			Authors: []DocumentAuthor{
-				{Name: "Me", Surname: "Me"},
-				{Name: "Myself", Surname: "Myself"},
-			},
-			Tags: []DocumentTag{
-				{Tag: "test"},
-				{Tag: "book"},
-			},
-			PublishDate: time.Date(1996, 7, 10, 19, 0, 0, 0, time.UTC),
 		},
-	})
+		{
+			Document: Document{
+				Title: strptr("Test Title"),
+				Uri:   strptr("file://test.txt"),
+				DocumentKind: DocumentKind{
+					Name: "file",
+				},
+				Tags: []DocumentTag{
+					{Tag: "test"},
+					{Tag: "book"},
+				},
+			},
+		},
+		{
+			Document: Document{
+				Title: strptr("Test Title"),
+				Uri:   strptr("file://test.txt"),
+				DocumentKind: DocumentKind{
+					Name: "file",
+				},
+			},
+		},
+	}
 
+	for _, request := range requests {
+		err = store.InsertDocument(context.TODO(), request)
+		require.NoError(t, err)
+	}
+}
+
+func TestDBStore_InsertDocument_Invalid(t *testing.T) {
+	tmpDb := path.Join(t.TempDir(), t.Name())
+	db, err := gorm.Open(sqlite.Open(tmpDb), &gorm.Config{
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	require.NoError(t, err)
+
+	store := NewDBStore(db)
+	err = store.Init()
+	require.NoError(t, err)
+
+	requests := []InsertDocumentRequest{
+		{
+			Document: Document{},
+		},
+	}
+
+	for _, request := range requests {
+		err = store.InsertDocument(context.TODO(), request)
+		require.Error(t, err)
+	}
 }
 
 func TestDBStore_ListDocuments(t *testing.T) {
@@ -71,7 +119,8 @@ func TestDBStore_ListDocuments(t *testing.T) {
 	for i := 0; i < documentsCount; i++ {
 		err = store.InsertDocument(context.TODO(), InsertDocumentRequest{
 			Document: Document{
-				Title: fmt.Sprintf("Test Title %d", i),
+				Title: strptr(fmt.Sprintf("Test Title %d", i)),
+				Uri:   strptr(""),
 				Authors: []DocumentAuthor{
 					{Name: "Author"},
 				},
@@ -97,8 +146,8 @@ func TestDBStore_ListDocuments(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, documents.Items, 2)
 
-	require.Equal(t, "Test Title 0", documents.Items[0].Title)
-	require.Equal(t, "Test Title 1", documents.Items[1].Title)
+	require.Equal(t, "Test Title 0", *documents.Items[0].Title)
+	require.Equal(t, "Test Title 1", *documents.Items[1].Title)
 
 	require.Equal(t, PaginationResponse{
 		TotalElements: documentsCount,
@@ -147,8 +196,8 @@ func TestDBStore_GetDocument(t *testing.T) {
 	require.NoError(t, err)
 
 	insertedDocument := Document{
-		Title: "Test Title",
-		Uri:   "file://test.txt",
+		Title: strptr("Test Title"),
+		Uri:   strptr("file://test.txt"),
 		DocumentKind: DocumentKind{
 			Name: "file",
 		},
@@ -160,7 +209,6 @@ func TestDBStore_GetDocument(t *testing.T) {
 			{Tag: "test"},
 			{Tag: "book"},
 		},
-		PublishDate: time.Date(1996, 7, 10, 19, 0, 0, 0, time.UTC),
 	}
 
 	err = store.InsertDocument(context.TODO(), InsertDocumentRequest{
@@ -175,7 +223,8 @@ func TestDBStore_GetDocument(t *testing.T) {
 
 	require.NoError(t, err)
 	require.Equal(t, 1, document.ID)
-	require.Equal(t, insertedDocument.Title, document.Title)
+	require.Equal(t, *insertedDocument.Title, *document.Title)
+	require.Equal(t, *insertedDocument.Uri, *document.Uri)
 	require.Equal(t, insertedDocument.Tags[0].Tag, document.Tags[0].Tag)
 	require.Equal(t, insertedDocument.Authors[0].Name, document.Authors[0].Name)
 
