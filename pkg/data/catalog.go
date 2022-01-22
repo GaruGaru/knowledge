@@ -2,7 +2,7 @@ package data
 
 import "context"
 
-type Store interface {
+type Catalog interface {
 	Init() error
 	InsertDocument(context.Context, InsertDocumentRequest) error
 	GetDocument(context.Context, GetDocumentRequest) (Document, error)

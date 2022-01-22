@@ -7,24 +7,24 @@ import (
 	"math"
 )
 
-type DBStore struct {
+type DBCatalog struct {
 	db *gorm.DB
 }
 
-func NewDBStore(db *gorm.DB) *DBStore {
-	return &DBStore{db: db}
+func NewDBCatalog(db *gorm.DB) *DBCatalog {
+	return &DBCatalog{db: db}
 }
 
-func (d *DBStore) Init() error {
+func (d *DBCatalog) Init() error {
 	return d.db.AutoMigrate(&Document{}, &DocumentKind{}, &DocumentTag{}, &DocumentAuthor{})
 }
 
-func (d *DBStore) InsertDocument(ctx context.Context, req InsertDocumentRequest) error {
+func (d *DBCatalog) InsertDocument(ctx context.Context, req InsertDocumentRequest) error {
 	result := d.db.WithContext(ctx).Create(&req.Document)
 	return result.Error
 }
 
-func (d *DBStore) ListDocuments(ctx context.Context, request ListDocumentsRequest) (ListDocumentsResponse, error) {
+func (d *DBCatalog) ListDocuments(ctx context.Context, request ListDocumentsRequest) (ListDocumentsResponse, error) {
 	query := d.db.WithContext(ctx)
 
 	query = query.Preload("Tags").Preload("Authors")
@@ -63,7 +63,7 @@ func (d *DBStore) ListDocuments(ctx context.Context, request ListDocumentsReques
 	return response, query.Error
 }
 
-func (d *DBStore) GetDocument(ctx context.Context, request GetDocumentRequest) (Document, error) {
+func (d *DBCatalog) GetDocument(ctx context.Context, request GetDocumentRequest) (Document, error) {
 	var document Document
 	query := d.db.WithContext(ctx).Preload("Tags").Preload("Authors").First(&document, request.DocumentID)
 	return document, query.Error

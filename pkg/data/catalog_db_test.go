@@ -10,27 +10,27 @@ import (
 	"testing"
 )
 
-func TestDBStore_Init(t *testing.T) {
+func TestDBCatalog_Init(t *testing.T) {
 	tmpDb := path.Join(t.TempDir(), t.Name())
 	db, err := gorm.Open(sqlite.Open(tmpDb), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	require.NoError(t, err)
 
-	store := NewDBStore(db)
-	err = store.Init()
+	catalog := NewDBCatalog(db)
+	err = catalog.Init()
 	require.NoError(t, err)
 }
 
-func TestDBStore_InsertDocument(t *testing.T) {
+func TestDBCatalog_InsertDocument(t *testing.T) {
 	tmpDb := path.Join(t.TempDir(), t.Name())
 	db, err := gorm.Open(sqlite.Open(tmpDb), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	require.NoError(t, err)
 
-	store := NewDBStore(db)
-	err = store.Init()
+	catalog := NewDBCatalog(db)
+	err = catalog.Init()
 	require.NoError(t, err)
 
 	requests := []InsertDocumentRequest{
@@ -76,20 +76,20 @@ func TestDBStore_InsertDocument(t *testing.T) {
 	}
 
 	for _, request := range requests {
-		err = store.InsertDocument(context.TODO(), request)
+		err = catalog.InsertDocument(context.TODO(), request)
 		require.NoError(t, err)
 	}
 }
 
-func TestDBStore_InsertDocument_Invalid(t *testing.T) {
+func TestDBCatalog_InsertDocument_Invalid(t *testing.T) {
 	tmpDb := path.Join(t.TempDir(), t.Name())
 	db, err := gorm.Open(sqlite.Open(tmpDb), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	require.NoError(t, err)
 
-	store := NewDBStore(db)
-	err = store.Init()
+	catalog := NewDBCatalog(db)
+	err = catalog.Init()
 	require.NoError(t, err)
 
 	requests := []InsertDocumentRequest{
@@ -99,25 +99,25 @@ func TestDBStore_InsertDocument_Invalid(t *testing.T) {
 	}
 
 	for _, request := range requests {
-		err = store.InsertDocument(context.TODO(), request)
+		err = catalog.InsertDocument(context.TODO(), request)
 		require.Error(t, err)
 	}
 }
 
-func TestDBStore_ListDocuments(t *testing.T) {
+func TestDBCatalog_ListDocuments(t *testing.T) {
 	tmpDb := path.Join(t.TempDir(), t.Name())
 	db, err := gorm.Open(sqlite.Open(tmpDb), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	require.NoError(t, err)
 
-	store := NewDBStore(db)
-	err = store.Init()
+	catalog := NewDBCatalog(db)
+	err = catalog.Init()
 	require.NoError(t, err)
 
 	const documentsCount = 10
 	for i := 0; i < documentsCount; i++ {
-		err = store.InsertDocument(context.TODO(), InsertDocumentRequest{
+		err = catalog.InsertDocument(context.TODO(), InsertDocumentRequest{
 			Document: Document{
 				Title: strptr(fmt.Sprintf("Test Title %d", i)),
 				Uri:   strptr(""),
@@ -134,7 +134,7 @@ func TestDBStore_ListDocuments(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	documents, err := store.ListDocuments(context.TODO(), ListDocumentsRequest{
+	documents, err := catalog.ListDocuments(context.TODO(), ListDocumentsRequest{
 		Title: "Test",
 		Tags:  []string{"book"},
 		Pagination: PaginationRequest{
@@ -160,7 +160,7 @@ func TestDBStore_ListDocuments(t *testing.T) {
 		require.NotEmpty(t, doc.Authors)
 	}
 
-	documents, err = store.ListDocuments(context.TODO(), ListDocumentsRequest{
+	documents, err = catalog.ListDocuments(context.TODO(), ListDocumentsRequest{
 		Title: "Book",
 		Tags:  []string{"book"},
 		Pagination: PaginationRequest{
@@ -172,7 +172,7 @@ func TestDBStore_ListDocuments(t *testing.T) {
 	require.NoError(t, err)
 	require.Empty(t, documents.Items, "title should not match")
 
-	documents, err = store.ListDocuments(context.TODO(), ListDocumentsRequest{
+	documents, err = catalog.ListDocuments(context.TODO(), ListDocumentsRequest{
 		Tags: []string{"tag_0"},
 		Pagination: PaginationRequest{
 			Page:     1,
@@ -184,15 +184,15 @@ func TestDBStore_ListDocuments(t *testing.T) {
 	require.Len(t, documents.Items, 1, "tag only search must yield only 1 result")
 }
 
-func TestDBStore_GetDocument(t *testing.T) {
+func TestDBCatalog_GetDocument(t *testing.T) {
 	tmpDb := path.Join(t.TempDir(), t.Name())
 	db, err := gorm.Open(sqlite.Open(tmpDb), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	require.NoError(t, err)
 
-	store := NewDBStore(db)
-	err = store.Init()
+	catalog := NewDBCatalog(db)
+	err = catalog.Init()
 	require.NoError(t, err)
 
 	insertedDocument := Document{
@@ -211,13 +211,13 @@ func TestDBStore_GetDocument(t *testing.T) {
 		},
 	}
 
-	err = store.InsertDocument(context.TODO(), InsertDocumentRequest{
+	err = catalog.InsertDocument(context.TODO(), InsertDocumentRequest{
 		Document: insertedDocument,
 	})
 
 	require.NoError(t, err)
 
-	document, err := store.GetDocument(context.TODO(), GetDocumentRequest{
+	document, err := catalog.GetDocument(context.TODO(), GetDocumentRequest{
 		DocumentID: 1,
 	})
 
@@ -228,7 +228,7 @@ func TestDBStore_GetDocument(t *testing.T) {
 	require.Equal(t, insertedDocument.Tags[0].Tag, document.Tags[0].Tag)
 	require.Equal(t, insertedDocument.Authors[0].Name, document.Authors[0].Name)
 
-	document, err = store.GetDocument(context.TODO(), GetDocumentRequest{
+	document, err = catalog.GetDocument(context.TODO(), GetDocumentRequest{
 		DocumentID: 9999,
 	})
 	require.ErrorIs(t, err, gorm.ErrRecordNotFound)
