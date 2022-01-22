@@ -10,8 +10,7 @@ type Catalog interface {
 }
 
 type InsertDocumentRequest struct {
-	Document   Document
-	Pagination PaginationResponse
+	Document Document
 }
 
 type ListDocumentsRequest struct {
