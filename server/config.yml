@@ -1,0 +1,5 @@
+catalog:
+  database:
+    type: "sqlite"
+    params:
+      db_path: "/tmp/gorm.db"

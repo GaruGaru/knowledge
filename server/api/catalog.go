@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/garugaru/knowledge/pkg/data"
+	"github.com/garugaru/knowledge/server/data"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"

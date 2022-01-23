@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/garugaru/knowledge/pkg/data"
+	"github.com/garugaru/knowledge/server/data"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	muxprom "gitlab.com/msvechla/mux-prometheus/pkg/middleware"

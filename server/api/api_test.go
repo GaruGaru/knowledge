@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"github.com/garugaru/knowledge/pkg/data"
+	"github.com/garugaru/knowledge/server/data"
 	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"

@@ -20,8 +20,8 @@ type ListDocumentsRequest struct {
 }
 
 type ListDocumentsResponse struct {
-	Items      []Document
-	Pagination PaginationResponse
+	Items      []Document         `json:"items"`
+	Pagination PaginationResponse `json:"pagination"`
 }
 
 type PaginationRequest struct {
@@ -38,7 +38,7 @@ type GetDocumentRequest struct {
 }
 
 type PaginationResponse struct {
-	TotalElements int64
-	Page          int
-	Pages         int
+	TotalElements int64 `json:"total_elements"`
+	Page          int   `json:"page"`
+	Pages         int   `json:"pages"`
 }
