@@ -1,8 +1,5 @@
 name: Coverage
-on:
-  push:
-    paths:
-      - 'server/**'
+on: [push, pull_request]
 defaults:
   run:
     working-directory: server
