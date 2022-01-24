@@ -11,7 +11,7 @@ WORKDIR /src
 COPY ./go.mod ./go.sum ./
 RUN go mod download
 
-COPY ./ ./
+COPY ./server ./
 
 RUN CGO_ENABLED=0 go build \
     -ldflags="-s -w" \
