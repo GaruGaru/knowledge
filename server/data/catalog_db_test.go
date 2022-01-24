@@ -15,8 +15,13 @@ func TestDBCatalog_Init(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(tmpDb), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
-	require.NoError(t, err)
 
+	require.NoError(t, err)
+	defer func() {
+		dbi, err := db.DB()
+		require.NoError(t, err)
+		require.NoError(t, dbi.Close())
+	}()
 	catalog := NewDBCatalog(db)
 	err = catalog.Init()
 	require.NoError(t, err)
@@ -27,8 +32,13 @@ func TestDBCatalog_InsertDocument(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(tmpDb), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
-	require.NoError(t, err)
 
+	require.NoError(t, err)
+	defer func() {
+		dbi, err := db.DB()
+		require.NoError(t, err)
+		require.NoError(t, dbi.Close())
+	}()
 	catalog := NewDBCatalog(db)
 	err = catalog.Init()
 	require.NoError(t, err)
@@ -86,8 +96,13 @@ func TestDBCatalog_InsertDocument_Invalid(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(tmpDb), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
-	require.NoError(t, err)
 
+	require.NoError(t, err)
+	defer func() {
+		dbi, err := db.DB()
+		require.NoError(t, err)
+		require.NoError(t, dbi.Close())
+	}()
 	catalog := NewDBCatalog(db)
 	err = catalog.Init()
 	require.NoError(t, err)
@@ -109,8 +124,13 @@ func TestDBCatalog_ListDocuments(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(tmpDb), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
-	require.NoError(t, err)
 
+	require.NoError(t, err)
+	defer func() {
+		dbi, err := db.DB()
+		require.NoError(t, err)
+		require.NoError(t, dbi.Close())
+	}()
 	catalog := NewDBCatalog(db)
 	err = catalog.Init()
 	require.NoError(t, err)
@@ -189,8 +209,13 @@ func TestDBCatalog_GetDocument(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open(tmpDb), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 	})
-	require.NoError(t, err)
 
+	require.NoError(t, err)
+	defer func() {
+		dbi, err := db.DB()
+		require.NoError(t, err)
+		require.NoError(t, dbi.Close())
+	}()
 	catalog := NewDBCatalog(db)
 	err = catalog.Init()
 	require.NoError(t, err)
