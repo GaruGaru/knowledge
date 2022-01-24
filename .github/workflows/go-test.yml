@@ -2,7 +2,7 @@ name: go-build-test
 on: [push, pull_request]
 defaults:
   run:
-    working-directory: /server
+    working-directory: server
 jobs:
   test:
     strategy:

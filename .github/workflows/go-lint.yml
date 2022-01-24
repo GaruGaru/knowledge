@@ -2,7 +2,7 @@ name: go-linter
 on: [push, pull_request]
 defaults:
   run:
-    working-directory: /server
+    working-directory: server
 jobs:
   golangci:
     name: lint
